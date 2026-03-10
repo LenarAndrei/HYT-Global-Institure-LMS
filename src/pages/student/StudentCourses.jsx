@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { studentNav } from './studentNav'
-import { HiBookOpen, HiClock, HiAcademicCap, HiSearch } from 'react-icons/hi'
+import { HiBookOpen, HiClock, HiAcademicCap, HiSearch, HiX } from 'react-icons/hi'
 
 const COURSES = [
   {
@@ -48,9 +47,9 @@ const COURSES = [
 ]
 
 export default function StudentCourses() {
-  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
+  const [selectedCourse, setSelectedCourse] = useState(null)
 
   const filtered = COURSES.filter(c => {
     const matchSearch = c.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -111,7 +110,7 @@ export default function StudentCourses() {
           <div
             key={course.id}
             className="sector-card"
-            onClick={() => navigate(`/student/courses/${course.id}`)}
+            onClick={() => setSelectedCourse(course)}
           >
             {/* Banner */}
             <div style={{ height: 120, background: course.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -166,6 +165,94 @@ export default function StudentCourses() {
       {filtered.length === 0 && (
         <div style={{ textAlign: 'center', padding: '48px 0', color: '#9ca3af', fontFamily: 'var(--font-poppins)' }}>
           No courses match your search.
+        </div>
+      )}
+
+      {/* Course detail modal */}
+      {selectedCourse && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+          }}
+          onClick={() => setSelectedCourse(null)}
+        >
+          <div
+            className="card"
+            style={{ width: 440, maxWidth: '92vw', padding: 28, position: 'relative' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedCourse(null)}
+              style={{
+                position: 'absolute', top: 12, right: 12, background: 'none',
+                border: 'none', cursor: 'pointer', color: '#6b7280',
+              }}
+            >
+              <HiX size={20} />
+            </button>
+
+            {/* Title */}
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
+              {selectedCourse.title}
+            </h2>
+
+            {/* Details */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <HiAcademicCap size={16} color="#6b7280" />
+                <span><strong>Trainer:</strong> {selectedCourse.trainer}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <HiClock size={16} color="#6b7280" />
+                <span><strong>Batch:</strong> {selectedCourse.batch}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <HiBookOpen size={16} color="#6b7280" />
+                <span><strong>Status:</strong>{' '}
+                  <span
+                    className={`badge ${selectedCourse.status === 'completed' ? 'badge--green' : 'badge--blue'}`}
+                    style={{ textTransform: 'capitalize' }}
+                  >
+                    {selectedCourse.status}
+                  </span>
+                </span>
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            <div style={{ marginTop: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13, color: '#6b7280' }}>
+                <span>Progress</span>
+                <span>{selectedCourse.progress}%</span>
+              </div>
+              <div style={{ height: 8, background: '#e5e7eb', borderRadius: 99, overflow: 'hidden' }}>
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${selectedCourse.progress}%`,
+                    background: selectedCourse.status === 'completed' ? '#16a34a' : '#0D4291',
+                    borderRadius: 99,
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Next task */}
+            <div style={{ marginTop: 16, padding: '10px 12px', background: '#f9fafb', borderRadius: 8, fontSize: 13, color: '#374151' }}>
+              <strong>Next Task:</strong> {selectedCourse.nextTask}
+            </div>
+
+            {/* Close button */}
+            <button
+              className="btn btn--outline"
+              style={{ marginTop: 20, width: '100%' }}
+              onClick={() => setSelectedCourse(null)}
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
     </DashboardLayout>

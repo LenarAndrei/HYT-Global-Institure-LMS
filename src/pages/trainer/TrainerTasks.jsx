@@ -50,9 +50,12 @@ export default function TrainerTasks() {
   const [page, setPage]             = useState(1)
   const [modalOpen, setModalOpen]   = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [editTarget, setEditTarget]     = useState(null)
+  const [editForm, setEditForm]         = useState(EMPTY_FORM)
   const [form, setForm]             = useState(EMPTY_FORM)
 
   const setField = (k, v) => setForm((f) => ({ ...f, [k]: v }))
+  const setEditField = (k, v) => setEditForm((f) => ({ ...f, [k]: v }))
 
   const filtered = tasks.filter(
     (t) => t.tab === tab &&
@@ -86,6 +89,24 @@ export default function TrainerTasks() {
   const handleDelete = () => {
     setTasks((prev) => prev.filter((t) => t.id !== deleteTarget.id))
     setDeleteTarget(null)
+  }
+
+  const openEdit = (task) => {
+    setEditTarget(task)
+    setEditForm({ name: task.name, course: task.course, due: task.due, desc: task.desc || '' })
+  }
+
+  const handleEditSave = () => {
+    if (!editForm.name.trim()) return
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === editTarget.id
+          ? { ...t, name: editForm.name, course: editForm.course, due: editForm.due || 'No due date', desc: editForm.desc }
+          : t
+      )
+    )
+    setEditTarget(null)
+    setEditForm(EMPTY_FORM)
   }
 
   return (
@@ -147,7 +168,7 @@ export default function TrainerTasks() {
                   <td><span className={`badge ${statusBadge(t.status)}`}>{t.status}</span></td>
                   <td>
                     <div style={{ display:'flex', gap:6 }}>
-                      <button className="btn btn--outline" style={{ padding:'4px 8px' }} title="Edit"><HiPencil size={14} /></button>
+                      <button className="btn btn--outline" style={{ padding:'4px 8px' }} title="Edit" onClick={() => openEdit(t)}><HiPencil size={14} /></button>
                       <button className="btn btn--danger"  style={{ padding:'4px 8px' }} title="Delete" onClick={() => setDeleteTarget(t)}><HiTrash size={14} /></button>
                     </div>
                   </td>
@@ -204,6 +225,36 @@ export default function TrainerTasks() {
           <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
             <button className="btn btn--outline" onClick={() => setDeleteTarget(null)}>Cancel</button>
             <button className="btn btn--danger" onClick={handleDelete}>Delete</button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Edit Modal */}
+      {editTarget && (
+        <Modal title="Edit Task" onClose={() => { setEditTarget(null); setEditForm(EMPTY_FORM) }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <div>
+              <label style={{ fontSize:13, fontWeight:500, color:'var(--color-dark)', display:'block', marginBottom:4 }}>Task Name</label>
+              <input className="settings-input" style={{ width:'100%' }} placeholder="Task name" value={editForm.name} onChange={(e) => setEditField('name', e.target.value)} />
+            </div>
+            <div>
+              <label style={{ fontSize:13, fontWeight:500, color:'var(--color-dark)', display:'block', marginBottom:4 }}>Course</label>
+              <select className="settings-input" style={{ width:'100%' }} value={editForm.course} onChange={(e) => setEditField('course', e.target.value)}>
+                {COURSES.map((c) => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize:13, fontWeight:500, color:'var(--color-dark)', display:'block', marginBottom:4 }}>Due Date</label>
+              <input className="settings-input" style={{ width:'100%' }} type="date" value={editForm.due} onChange={(e) => setEditField('due', e.target.value)} />
+            </div>
+            <div>
+              <label style={{ fontSize:13, fontWeight:500, color:'var(--color-dark)', display:'block', marginBottom:4 }}>Description (optional)</label>
+              <textarea className="settings-input" style={{ width:'100%', height:80, padding:'8px 14px', resize:'vertical' }} placeholder="Task description…" value={editForm.desc} onChange={(e) => setEditField('desc', e.target.value)} />
+            </div>
+            <div style={{ display:'flex', justifyContent:'flex-end', gap:10, marginTop:4 }}>
+              <button className="btn btn--outline" onClick={() => { setEditTarget(null); setEditForm(EMPTY_FORM) }}>Cancel</button>
+              <button className="btn btn--primary" onClick={handleEditSave}>Save</button>
+            </div>
           </div>
         </Modal>
       )}

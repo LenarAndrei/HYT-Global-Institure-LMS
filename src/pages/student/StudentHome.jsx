@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { studentNav } from './studentNav'
 import { HiBookOpen, HiClock, HiAcademicCap, HiClipboardCheck } from 'react-icons/hi'
@@ -23,6 +24,7 @@ const announcements = [
 ]
 
 export default function StudentHome() {
+  const navigate = useNavigate()
   return (
     <DashboardLayout navItems={studentNav} pageTitle={null}>
       {/* Stats */}
@@ -54,7 +56,7 @@ export default function StudentHome() {
       <div className="card">
         <div className="page-header">
           <span className="page-header__title">My Courses</span>
-          <button className="btn btn--outline">View All</button>
+          <button className="btn btn--outline" onClick={() => navigate('/student/courses')}>View All</button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {courses.map((c) => (

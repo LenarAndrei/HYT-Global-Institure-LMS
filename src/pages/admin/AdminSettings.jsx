@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { adminNav } from './adminNav'
 
@@ -237,7 +237,15 @@ const TAB_CONTENT = { account: AccountTab, access: AccessTab, system: SystemTab,
 
 export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState('account')
+  const [saved, setSaved] = useState(false)
   const Content = TAB_CONTENT[activeTab]
+
+  useEffect(() => {
+    if (saved) {
+      const timer = setTimeout(() => setSaved(false), 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [saved])
 
   return (
     <DashboardLayout
@@ -259,8 +267,13 @@ export default function AdminSettings() {
 
       <Content />
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-        <button className="btn btn--primary">Save Changes</button>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginTop: 8 }}>
+        {saved && (
+          <div style={{ padding: '10px 16px', background: '#dcfce7', borderRadius: 8, color: '#166534', fontSize: 13, fontWeight: 500, fontFamily: 'var(--font-poppins)', marginBottom: 8 }}>
+            Settings saved successfully.
+          </div>
+        )}
+        <button className="btn btn--primary" onClick={() => setSaved(true)}>Save Changes</button>
       </div>
     </DashboardLayout>
   )

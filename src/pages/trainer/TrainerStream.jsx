@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import {
   HiDocumentText,
@@ -7,6 +8,7 @@ import {
   HiCheck,
   HiUsers,
   HiBookOpen,
+  HiX,
 } from 'react-icons/hi'
 
 const QUICK_ACTIONS = [
@@ -16,7 +18,7 @@ const QUICK_ACTIONS = [
   { label: 'Question',   icon: HiChat,          bg: 'rgba(34,197,94,0.1)', color: '#16a34a' },
 ]
 
-const POSTS = [
+const INITIAL_POSTS = [
   {
     type: 'Assignment',
     badgeBg: 'rgba(245,158,11,0.1)',
@@ -51,8 +53,26 @@ const POSTS = [
   },
 ]
 
+function Modal({ title, onClose, children }) {
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
+      <div style={{ background:'#fff', borderRadius:12, padding:'28px 32px', width:520, maxWidth:'90vw', boxShadow:'0 20px 60px rgba(0,0,0,0.2)' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+          <span style={{ fontFamily:'var(--font-poppins)', fontWeight:700, fontSize:18, color:'var(--color-dark)' }}>{title}</span>
+          <button onClick={onClose} style={{ background:'none', cursor:'pointer', color:'#6b7280', border:'none' }}><HiX size={20} /></button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
 export default function TrainerStream() {
   const { course, courseId } = useOutletContext()
+  const [createType, setCreateType] = useState(null)
+  const [viewPost, setViewPost] = useState(null)
+  const [posts, setPosts] = useState(INITIAL_POSTS)
+  const [createForm, setCreateForm] = useState({ title: '', description: '' })
 
   return (
     <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
@@ -114,6 +134,7 @@ export default function TrainerStream() {
               return (
                 <button
                   key={qa.label}
+                  onClick={() => { setCreateType(qa.label); setCreateForm({ title: '', description: '' }) }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -138,7 +159,7 @@ export default function TrainerStream() {
         </div>
 
         {/* Feed Posts */}
-        {POSTS.map((post, i) => (
+        {posts.map((post, i) => (
           <div
             key={i}
             style={{
@@ -234,7 +255,7 @@ export default function TrainerStream() {
               <p style={{ fontSize: 13, color: 'var(--color-gray)', lineHeight: 1.5, margin: 0 }}>
                 {post.desc}
               </p>
-              <button className="btn btn--outline" style={{ fontSize: 12, marginTop: 8 }}>
+              <button className="btn btn--outline" style={{ fontSize: 12, marginTop: 8 }} onClick={() => setViewPost(post)}>
                 View
               </button>
             </div>
@@ -370,6 +391,143 @@ export default function TrainerStream() {
           </div>
         </div>
       </div>
+
+      {/* Create Modal */}
+      {createType && (
+        <Modal title={`Create ${createType}`} onClose={() => setCreateType(null)}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <input
+              type="text"
+              placeholder="Title"
+              value={createForm.title}
+              onChange={e => setCreateForm(f => ({ ...f, title: e.target.value }))}
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                border: '1px solid #d1d5db',
+                borderRadius: 8,
+                fontSize: 14,
+                fontFamily: 'var(--font-poppins)',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+            <textarea
+              placeholder="Description"
+              value={createForm.description}
+              onChange={e => setCreateForm(f => ({ ...f, description: e.target.value }))}
+              rows={4}
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                border: '1px solid #d1d5db',
+                borderRadius: 8,
+                fontSize: 14,
+                fontFamily: 'var(--font-poppins)',
+                outline: 'none',
+                resize: 'vertical',
+                boxSizing: 'border-box',
+              }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 4 }}>
+              <button
+                onClick={() => setCreateType(null)}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: 8,
+                  border: '1px solid #d1d5db',
+                  background: '#fff',
+                  fontSize: 13,
+                  fontFamily: 'var(--font-poppins)',
+                  cursor: 'pointer',
+                  color: 'var(--color-gray)',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const qa = QUICK_ACTIONS.find(q => q.label === createType)
+                  setPosts(prev => [
+                    {
+                      type: createType,
+                      badgeBg: qa.bg,
+                      badgeColor: qa.color,
+                      title: createForm.title,
+                      desc: createForm.description,
+                      time: 'Just now',
+                    },
+                    ...prev,
+                  ])
+                  setCreateType(null)
+                  setCreateForm({ title: '', description: '' })
+                }}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: 'var(--color-primary)',
+                  color: '#fff',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  fontFamily: 'var(--font-poppins)',
+                  cursor: 'pointer',
+                }}
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* View Modal */}
+      {viewPost && (
+        <Modal title="Post Details" onClose={() => setViewPost(null)}>
+          <div style={{ marginBottom: 12 }}>
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '4px 10px',
+                borderRadius: 6,
+                fontSize: 12,
+                fontWeight: 600,
+                background: viewPost.badgeBg,
+                color: viewPost.badgeColor,
+              }}
+            >
+              {viewPost.type}
+            </span>
+          </div>
+          <div style={{ fontFamily: 'var(--font-poppins)', fontWeight: 700, fontSize: 16, color: 'var(--color-dark)', marginBottom: 8 }}>
+            {viewPost.title}
+          </div>
+          <p style={{ fontSize: 14, color: 'var(--color-gray)', lineHeight: 1.6, margin: '0 0 12px' }}>
+            {viewPost.desc}
+          </p>
+          <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 16 }}>
+            Posted {viewPost.time}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => setViewPost(null)}
+              style={{
+                padding: '8px 24px',
+                borderRadius: 8,
+                border: 'none',
+                background: 'var(--color-primary)',
+                color: '#fff',
+                fontSize: 13,
+                fontWeight: 600,
+                fontFamily: 'var(--font-poppins)',
+                cursor: 'pointer',
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }

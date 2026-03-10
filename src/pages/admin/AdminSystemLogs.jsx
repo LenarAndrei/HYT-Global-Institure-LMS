@@ -19,8 +19,11 @@ const LOGS = [
   { id: 13, user: 'system',             action: 'Database error: connection timeout',module: 'System',         level: 'Error',   date: 'Mar 6, 2026 03:22' },
 ]
 
+const PAGE_SIZE = 10
+
 export default function AdminSystemLogs() {
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
 
   const filtered = LOGS.filter(
     (l) =>
@@ -28,6 +31,27 @@ export default function AdminSystemLogs() {
       l.action.toLowerCase().includes(search.toLowerCase()) ||
       l.module.toLowerCase().includes(search.toLowerCase())
   )
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const rows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const handleExport = () => {
+    const header = '#,User,Action,Module,Level,Timestamp'
+    const csvRows = filtered.map(
+      (l) =>
+        `${l.id},"${l.user}","${l.action}","${l.module}","${l.level}","${l.date}"`
+    )
+    const csv = [header, ...csvRows].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'system_logs.csv'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <DashboardLayout
@@ -43,10 +67,10 @@ export default function AdminSystemLogs() {
               className="table-search"
               placeholder="Search logs…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             />
           </div>
-          <button className="btn btn--outline">Export</button>
+          <button className="btn btn--outline" onClick={handleExport}>Export</button>
         </div>
 
         <table className="data-table">
@@ -61,7 +85,7 @@ export default function AdminSystemLogs() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((l) => (
+            {rows.map((l) => (
               <tr key={l.id}>
                 <td>{l.id}</td>
                 <td style={{ color: '#374151', fontWeight: 500 }}>{l.user}</td>
@@ -80,8 +104,12 @@ export default function AdminSystemLogs() {
         </table>
 
         <div className="pagination">
-          {[1, 2, 3, 4].map((n) => (
-            <button key={n} className={`pagination__btn${n === 1 ? ' pagination__btn--active' : ''}`}>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+            <button
+              key={n}
+              className={`pagination__btn${n === page ? ' pagination__btn--active' : ''}`}
+              onClick={() => setPage(n)}
+            >
               {n}
             </button>
           ))}

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { trainerNav } from './trainerNav'
@@ -7,6 +8,7 @@ import {
   HiClipboardCheck,
   HiStar,
   HiClock,
+  HiX,
 } from 'react-icons/hi'
 
 const STATS = [
@@ -16,7 +18,7 @@ const STATS = [
   { label: 'Avg Score',         value: '87%', icon: HiStar,         color: '#7c3aed' },
 ]
 
-const COURSES = [
+const INITIAL_COURSES = [
   { name: 'Barista NCII',              batch: 'Batch 16', enrolled: 32, total: 40, progress: 78,  gradient: 'linear-gradient(135deg,#f97316,#fb923c)', progressColor: '#f97316' },
   { name: 'Basic Electrical Wiring',   batch: 'Batch 5',  enrolled: 18, total: 25, progress: 68,  gradient: 'linear-gradient(135deg,#7c3aed,#a855f7)', progressColor: '#7c3aed' },
   { name: 'ICT Web Dev Fundamentals',  batch: 'Batch 3',  enrolled: 40, total: 40, progress: 100, gradient: 'linear-gradient(135deg,#0891b2,#06b6d4)', progressColor: '#0891b2' },
@@ -36,8 +38,25 @@ const ACTIVITY = [
   { initials: 'P', bg: '#0891b2', name: 'Pedro R.',  action: 'joined the course',      time: 'Yesterday' },
 ]
 
+function Modal({ title, onClose, children }) {
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
+      <div style={{ background:'#fff', borderRadius:12, padding:'28px 32px', width:480, maxWidth:'90vw', boxShadow:'0 20px 60px rgba(0,0,0,0.2)' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+          <span style={{ fontFamily:'var(--font-poppins)', fontWeight:700, fontSize:18, color:'var(--color-dark)' }}>{title}</span>
+          <button onClick={onClose} style={{ background:'none', cursor:'pointer', color:'#6b7280', border:'none' }}><HiX size={20} /></button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
 export default function TrainerHome() {
   const navigate = useNavigate()
+  const [courses, setCourses] = useState(INITIAL_COURSES)
+  const [showCreate, setShowCreate] = useState(false)
+  const [form, setForm] = useState({ name: '', batch: '', maxStudents: '' })
 
   return (
     <DashboardLayout navItems={trainerNav} pageTitle="Dashboard" pageSubtitle="Welcome back, Trainer">
@@ -65,7 +84,7 @@ export default function TrainerHome() {
         </div>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <button
-            onClick={() => navigate('/trainer/courses')}
+            onClick={() => setShowCreate(true)}
             style={{
               background: '#ff7700',
               color: 'white',
@@ -79,21 +98,6 @@ export default function TrainerHome() {
             }}
           >
             Create Course
-          </button>
-          <button
-            style={{
-              background: 'transparent',
-              color: 'white',
-              border: '1px solid white',
-              borderRadius: 8,
-              padding: '10px 20px',
-              fontFamily: 'var(--font-poppins)',
-              fontWeight: 600,
-              fontSize: 14,
-              cursor: 'pointer',
-            }}
-          >
-            New Announcement
           </button>
         </div>
       </div>
@@ -169,7 +173,7 @@ export default function TrainerHome() {
           >
             My Active Courses
           </div>
-          {COURSES.map(c => (
+          {courses.map(c => (
             <div
               key={c.name}
               style={{
@@ -332,6 +336,67 @@ export default function TrainerHome() {
           </div>
         </div>
       </div>
+      {showCreate && (
+        <Modal title="Create Course" onClose={() => setShowCreate(false)}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--color-dark)', marginBottom: 6 }}>Course Name</label>
+              <input
+                className="settings-input"
+                type="text"
+                value={form.name}
+                onChange={e => setForm({ ...form, name: e.target.value })}
+                placeholder="e.g. Barista NCII"
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--color-dark)', marginBottom: 6 }}>Batch</label>
+              <input
+                className="settings-input"
+                type="text"
+                value={form.batch}
+                onChange={e => setForm({ ...form, batch: e.target.value })}
+                placeholder="e.g. Batch 17"
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--color-dark)', marginBottom: 6 }}>Max Students</label>
+              <input
+                className="settings-input"
+                type="number"
+                value={form.maxStudents}
+                onChange={e => setForm({ ...form, maxStudents: e.target.value })}
+                placeholder="e.g. 40"
+              />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 8 }}>
+              <button className="btn btn--outline" onClick={() => setShowCreate(false)}>Cancel</button>
+              <button
+                className="btn btn--primary"
+                onClick={() => {
+                  if (!form.name || !form.batch || !form.maxStudents) return
+                  setCourses([
+                    ...courses,
+                    {
+                      name: form.name,
+                      batch: form.batch,
+                      enrolled: 0,
+                      total: Number(form.maxStudents),
+                      progress: 0,
+                      gradient: 'linear-gradient(135deg,#0d4291,#1e5bb5)',
+                      progressColor: '#0d4291',
+                    },
+                  ])
+                  setShowCreate(false)
+                  setForm({ name: '', batch: '', maxStudents: '' })
+                }}
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </DashboardLayout>
   )
 }
