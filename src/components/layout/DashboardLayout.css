@@ -16,7 +16,7 @@
   padding: 0 32px;
   height: 72px;
   flex-shrink: 0;
-  background: linear-gradient(135deg, #0b1540 0%, #0d4291 100%);
+  background: #0B005C;
 }
 
 .dash__topbar-left {
@@ -104,24 +104,25 @@
 .dash__sidebar {
   width: 260px;
   flex-shrink: 0;
-  background: linear-gradient(180deg, #0b1540 0%, #0d2060 100%);
+  background: #FFFFFF;
   padding: 24px 16px;
   overflow-y: auto;
+  border-right: 1px solid #e5e7eb;
 }
 
 .dash__nav {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .dash__nav-item {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 18px;
+  padding: 13px 18px;
   border-radius: 50px;
-  color: rgba(255, 255, 255, 0.75);
+  color: #0B005C;
   font-family: var(--font-poppins);
   font-size: 14px;
   font-weight: 500;
@@ -130,13 +131,18 @@
 }
 
 .dash__nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  color: var(--color-white);
+  background-color: rgba(11, 0, 92, 0.06);
+  color: #0B005C;
 }
 
 .dash__nav-item--active {
-  background-color: var(--color-primary);
-  color: var(--color-white);
+  background-color: #0D4291;
+  color: #FFFFFF;
+}
+
+.dash__nav-item--active:hover {
+  background-color: #0d4291;
+  color: #FFFFFF;
 }
 
 .dash__nav-icon {

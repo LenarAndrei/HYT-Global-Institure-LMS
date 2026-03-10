@@ -15,6 +15,7 @@ import AdminSettings       from './pages/admin/AdminSettings'
 
 // Student
 import StudentHome            from './pages/student/StudentHome'
+import StudentCourses         from './pages/student/StudentCourses'
 import StudentCertificates    from './pages/student/StudentCertificates'
 import StudentArchivedCourses from './pages/student/StudentArchivedCourses'
 import StudentTasks           from './pages/student/StudentTasks'
@@ -68,6 +69,7 @@ function AppRoutes() {
       {/* Student */}
       <Route path="/student"              element={<RequireAuth><StudentHome /></RequireAuth>} />
       <Route path="/student/calendar"     element={<RequireAuth><StudentCalendar /></RequireAuth>} />
+      <Route path="/student/courses"      element={<RequireAuth><StudentCourses /></RequireAuth>} />
       <Route path="/student/tasks"        element={<RequireAuth><StudentTasks /></RequireAuth>} />
       <Route path="/student/certificates" element={<RequireAuth><StudentCertificates /></RequireAuth>} />
       <Route path="/student/archived"     element={<RequireAuth><StudentArchivedCourses /></RequireAuth>} />
